@@ -32,8 +32,13 @@ async def create_user(body: UserModel, db: Session) -> User:
         avatar = g.get_image()
     except Exception as e:
         print(e)
+
+    if db.query(User).count() == 0:   
+        role = 'admin'
+    else:
+        role = 'user'
         
-    new_user = User(**body.model_dump(), avatar=avatar)
+    new_user = User(**body.model_dump(), avatar=avatar, role=role)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
