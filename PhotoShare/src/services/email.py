@@ -22,6 +22,7 @@ conf = ConnectionConfig(
     TEMPLATE_FOLDER=Path(__file__).parent / 'templates',
 )
 
+fm = FastMail(conf)
 
 async def send_email(email: EmailStr, username: str, host: str):
     try:
@@ -33,7 +34,6 @@ async def send_email(email: EmailStr, username: str, host: str):
             subtype=MessageType.html
         )
 
-        fm = FastMail(conf)
         await fm.send_message(message, template_name="email_template.html")
     except ConnectionErrors as err:
         print(err)

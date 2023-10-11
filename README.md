@@ -1,2 +1,11 @@
 # TeamProject_FastAPI
 Team project on FastAPI.
+
+
+
+
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXN0ZXQxOTkwQGljbG91ZC5jb20iLCJpYXQiOjE2OTcwNDEyODksImV4cCI6MTY5NzA0MjE4OSwic2NvcGUiOiJhY2Nlc3NfdG9rZW4ifQ.HohtyRKULJYATx5veuuV93Rj6GcJSiTH9w5UEpxC9J4",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXN0ZXQxOTkwQGljbG91ZC5jb20iLCJpYXQiOjE2OTcwNDEyODksImV4cCI6MTY5NzY0NjA4OSwic2NvcGUiOiJyZWZyZXNoX3Rva2VuIn0.Ucgr1bVeAYUgen9NXf2PlgknQgL0Yzjbn7hppUlzWAA",
+  "token_type": "bearer"
+}
