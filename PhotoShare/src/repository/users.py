@@ -54,3 +54,22 @@ async def confirmed_email(email: str, db: Session) -> None:
     user = await get_user_by_email(email, db)
     user.confirmed = True
     db.commit()
+
+
+async def update_avatar(email: str, url: str, db: Session) -> User:
+    """
+        Update the avatar URL for a user.
+
+        :param email: The email address of the user whose avatar is to be updated.
+        :type email: str
+        :param url: The new avatar URL.
+        :type url: str
+        :param db: The database session.
+        :type db: Session
+        :return: The user with the updated avatar URL.
+        :rtype: User
+    """
+    user = await get_user_by_email(email, db)
+    user.avatar = url
+    db.commit()
+    return user
