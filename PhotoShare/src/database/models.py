@@ -32,9 +32,9 @@ class Share(Base):
     __tablename__ = 'shares'
 
     id = Column(Integer, primary_key=True, index=True)
-    name_share = Column(String, index=True, unique=True, nullable=False)
-    image = Column(String, index=True, nullable=False)
-    qrcode = Column(String, index=True)
+    #name_share = Column(String, index=True, unique=True, nullable=False) # убрати unique= False
+    image = Column(String, index=True, nullable=False) # назвати url
+    qrcode = Column(String, index=True) # image_qr
     description = Column(String, index=True, nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now())

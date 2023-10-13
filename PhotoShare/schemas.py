@@ -5,7 +5,7 @@ from datetime import date, datetime
 class ShareRequest(BaseModel):
     name_share: str = Field(min_length=1, max_length=20)
     image: str
-    qrcode: str
+    #qrcode: str
     description: str = Field(min_length=2, max_length=50)
 
 
@@ -17,6 +17,7 @@ class ShareResponce(BaseModel):
     description: str = Field(min_length=2, max_length=50)
     created_at: datetime
     updated_at: datetime
+
 
 class UserModel(BaseModel):
     username: str = Field(min_length=5, max_length=16)
