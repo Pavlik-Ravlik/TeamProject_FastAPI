@@ -24,5 +24,4 @@ if __name__ == "__main__":
     async def main():
         data = await generate_qr_code(img_url, name)
         data.print_ascii(tty=True, invert=True)
-
     asyncio.run(main())
