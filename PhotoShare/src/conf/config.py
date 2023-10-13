@@ -1,24 +1,28 @@
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 class Settings(BaseSettings):
-    postgres_user: str = 'postgres'
-    password: str = 'Navi'
-    port: int = '5432'
-    db_name: str = 'photoshare'
-    sqlalchemy_database_url: str = 'postgresql+psycopg2://postgres:Navi@localhost:5432/photoshare'
-    secret_key: str = 'secret_key'
-    algorithm: str = 'HS256'
-    mail_username: str = 'pastet1990@meta.ua'
-    mail_password: str = 'Zasobi2007'
-    mail_from: str = "pastet1990@meta.ua"
-    mail_port: int = '465'
-    mail_server: str = 'smtp.meta.ua'
-    # redis_host: str = 'localhost'
-    # redis_port: int = 6379
-    cloudinary_name: str = 'dfnnqtknu'
-    cloudinary_api_key: str = '386221182173588'
-    cloudinary_api_secret: str = 'oW4ly_zJa2SVMB8oHlZSU8erDn4'
+    postgres_user: str = os.getenv('POSTGRES_USER') #'postgres'
+    password: str = os.getenv('PASSWORD')
+    port: int = os.getenv('PORT')
+    db_name: str = os.getenv('DB_NAME')
+    sqlalchemy_database_url: str = os.getenv('SQLALCHEMY_DATABASE_URL')
+    secret_key: str = os.getenv('SECRET_KEY')
+    algorithm: str = os.getenv('ALGORITHM')
+    mail_username: str = os.getenv('MAIL_USERNAME')
+    mail_password: str = os.getenv('MAIL_PASSWORD')
+    mail_from: str = os.getenv('MAIL_FROM')
+    mail_port: int = os.getenv('MAIL_PORT')
+    mail_server: str = os.getenv('MAIL_SERVER')
+    # redis_host: str = os.getenv('REDIS_HOST')
+    # redis_port: int = os.getenv('REDIS_PORT')
+    cloudinary_name: str = os.getenv('CLOUDINARY_NAME')
+    cloudinary_api_key: str = os.getenv('CLOUDINARY_API_KEY')
+    cloudinary_api_secret: str = os.getenv('CLOUDINARY_API_SECRET')
 
     class Config:
         env_file = ".env"
