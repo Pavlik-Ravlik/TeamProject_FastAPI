@@ -33,7 +33,7 @@ class Share(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     url = Column(String, index=True, nullable=False)
-    image_qr = Column(String, index=True)
+    image_qr = Column(String, index=True, nullable=True)
     description = Column(String, index=True, nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now())
