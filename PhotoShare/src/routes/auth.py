@@ -36,8 +36,6 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
     
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
-    # if exist_role and exist_role == 'admin':
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Admin is already exist.')
     
     body.password = auth_service.get_password_hash(body.password)
     new_user = await repository_users.create_user(body, db)

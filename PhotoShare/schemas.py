@@ -5,7 +5,6 @@ from datetime import date, datetime
 class ShareRequest(BaseModel):
     name_share: str = Field(min_length=1, max_length=20)
     image: str
-    #qrcode: str
     description: str = Field(min_length=2, max_length=50)
 
 
