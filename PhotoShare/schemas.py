@@ -3,17 +3,16 @@ from datetime import date, datetime
 
 
 class ShareRequest(BaseModel):
-    name_share: str = Field(min_length=1, max_length=20)
-    image: str
     description: str = Field(min_length=2, max_length=50)
 
 
 class ShareResponce(BaseModel):
     id: int
-    name_share: str = Field(min_length=1, max_length=20)
     image: str
     qrcode: str
     description: str = Field(min_length=2, max_length=50)
+    comment: str
+    tags: list
     created_at: datetime
     updated_at: datetime
 

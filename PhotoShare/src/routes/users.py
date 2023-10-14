@@ -10,7 +10,7 @@ from src.services.auth import auth_service
 from src.conf.config import settings
 from schemas import UserDb
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/profile", tags=["profile"])
 
 
 @router.get("/me/", response_model=UserDb)
@@ -27,11 +27,7 @@ async def read_users_me(current_user: User = Depends(auth_service.get_current_us
 
 
 @router.patch("/avatar", response_model=UserDb)
-async def update_avatar_user(
-    file: UploadFile = File(),
-    current_user: User = Depends(auth_service.get_current_user),
-    db: Session = Depends(get_db),
-):
+async def update_avatar_user(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
     """
     Triggered when a client sends a PATCH request to this route.
 
