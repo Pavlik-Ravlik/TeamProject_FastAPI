@@ -47,7 +47,6 @@ async def update_avatar_user(file: UploadFile = File(), current_user: User = Dep
         secure=True,
     )
 
-    # uploaded_file_jpg
     r = cloudinary.uploader.upload(
         file.file,
         public_id=f"NotesApp/{current_user.username}", # NotesApp/{current_user.username}_jpg
@@ -57,27 +56,7 @@ async def update_avatar_user(file: UploadFile = File(), current_user: User = Dep
         format="jpg",
     )
     
-    """
-    uploaded_file_png = upload(
-        file.file, 
-        public_id=f'NotesApp/{current_user.username}_png', 
-        width=500, 
-        height=500, 
-        crop='limit', 
-        format='png',
-    )
-    """
-    
-    # src_url_jpg
-    src_url = cloudinary.CloudinaryImage(f"NotesApp/{current_user.username}").build_url( # (f"NotesApp/{current_user.username}_jpg") or (uploaded_file_jpg['public_id']) / (r['public_id'])
-        width=500, height=500, crop="limit", format="jpg"
-    )
-    
-    """
-    src_url_png = cloudinary.CloudinaryImage(uploaded_file_png['public_id']).build_url(
-        width=500, height=500, crop='limit', format='png'
-    )
-    """
+    src_url = cloudinary.CloudinaryImage(f"NotesApp/{current_user.username}").build_url(width=500, height=500, crop="limit", format="jpg")
 
-    user = await repository_users.update_avatar(current_user.email, src_url, db) # (current_user.email, src_url_jpg, src_url_png, db)
+    user = await repository_users.update_avatar(current_user.email, src_url, db)
     return user
