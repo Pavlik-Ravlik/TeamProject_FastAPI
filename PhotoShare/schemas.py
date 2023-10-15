@@ -2,6 +2,11 @@ from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
 
 
+class Admin(BaseModel):
+    id: int
+    role: str
+
+
 class ShareRequest(BaseModel):
     description: str = Field(min_length=2, max_length=50)
 

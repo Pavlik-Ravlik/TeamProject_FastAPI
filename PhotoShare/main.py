@@ -3,7 +3,7 @@ import fastapi
 
 from fastapi import FastAPI, Request, status
 
-from src.routes import auth, users, shares, public
+from src.routes import auth, users, shares, public, admin
 
 
 app = FastAPI()
@@ -12,6 +12,7 @@ app.include_router(auth.router, prefix='/app')
 app.include_router(users.router, prefix='/app')
 app.include_router(shares.router, prefix='/app')
 app.include_router(public.router, prefix='/app')
+app.include_router(admin.router, prefix='/app')
 
 @app.get('/')
 def read_root():
