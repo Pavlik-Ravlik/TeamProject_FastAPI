@@ -42,6 +42,8 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+
+*.pyc
 __pycache__/
 alembic/
 
