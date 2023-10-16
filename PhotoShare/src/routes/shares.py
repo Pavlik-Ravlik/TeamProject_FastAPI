@@ -12,7 +12,7 @@ from src.repository import shares as repository_shares
 from src.services.auth import auth_service
 from src.conf.config import settings
 from schemas import ShareRequest, ShareResponce
-from repository.shares import generate_qr_code
+
 
 router = APIRouter(prefix="/shares", tags=['my-shares'])
 
@@ -41,12 +41,18 @@ async def create_share(share: ShareRequest, file: UploadFile = File(),  db: Sess
         width=500, height=500, crop="limit", format="jpg"
     )
     
-    share = await repository_shares.create_share(share, src_url, db, current_user)
+    # Додайте відповідний код для виділення тегів з опису share.description
+    tags = repository_shares.extract_tags(share.description)
+
+    # Передайте теги у функцію create_share
+    share = await repository_shares.create_share(share, src_url, db, current_user, tags)
     return share
 
 
 @router.post('/qr', response_model=List[ShareResponce]) 
-async def get_qrcode(url: str, name: str, db: Session, current_user: User):
+
+async def get_qrcode(url: str, name: str, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+
     image_qr = await generate_qr_code(url=url, name=name, db=db, current_user=current_user)
     return image_qr.print_ascii(tty=True, invert=True)
 

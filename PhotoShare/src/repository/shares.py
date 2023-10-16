@@ -6,9 +6,10 @@ from sqlalchemy.orm import Session
 from typing import Type
 
 from src.database.models import User, Share
-from schemas import ShareRequest
+from schemas import ShareRequest, TagCreate
 import qrcode as qr
 import cloudinary.uploader
+from src.repository.tags import extract_tags, create_tag, get_tag_by_name
 
 
 
@@ -16,6 +17,20 @@ import cloudinary.uploader
 async def create_share(share: ShareRequest, src_url: str, db: Session, current_user: User) -> Share:
     if db.query(Share).filter(Share.url == share.url).first():
         raise HTTPException(status_code=400, detail='This share is already exists.')
+
+    # Отримайте список тегів з тексту
+    tags = extract_tags(share.description)
+
+    # Додайте пости теги
+    for tag in tags:
+        tag_name = tag[1:]  # Видаліть символ "#" з початку тегу
+        db_tag = get_tag_by_name(db, tag_name)
+        if db_tag:
+            db_share.tags.append(db_tag)
+        else:
+            # Створіть новий тег, якщо він не існує
+            db_tag = create_tag(db, TagCreate(name=tag_name))
+            db_share.tags.append(db_tag)
     
     db_share = Share(**share.model_dump(), user=current_user)
     db.add(db_share)

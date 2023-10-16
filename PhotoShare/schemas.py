@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
 
@@ -53,3 +54,19 @@ class TokenModel(BaseModel):
 
 class RequestEmail(BaseModel):
     email: EmailStr
+    
+
+class TagBase(BaseModel):
+    name: str
+
+
+class TagCreate(TagBase):
+    pass
+
+
+class TagInDB(TagBase):
+    id: int
+
+
+class TagInResponse(TagInDB):
+    pass
