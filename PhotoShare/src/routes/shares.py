@@ -50,10 +50,9 @@ async def create_share(share: ShareRequest, file: UploadFile = File(),  db: Sess
 
 
 @router.post('/qr', response_model=List[ShareResponce]) 
-
 async def get_qrcode(url: str, name: str, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
 
-    image_qr = await generate_qr_code(url=url, name=name, db=db, current_user=current_user)
+    image_qr = await repository_shares.generate_qr_code(url=url, name=name, db=db, current_user=current_user)
     return image_qr.print_ascii(tty=True, invert=True)
 
 @router.get('/myshares', response_model=List[ShareResponce]) #  , dependencies=[Depends(RateLimiter(times=10, seconds=60)
