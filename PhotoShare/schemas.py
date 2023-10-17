@@ -3,6 +3,15 @@ from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
 
 
+class CommentRequest(BaseModel):
+    description: str
+
+
+class CommentResponce(BaseModel):
+    id: int
+    user_id: int
+    description: str
+
 class Admin(BaseModel):
     id: int
     role: str
@@ -56,17 +65,10 @@ class RequestEmail(BaseModel):
     email: EmailStr
     
 
-class TagBase(BaseModel):
+class TagRequest(BaseModel):
     name: str
 
 
-class TagCreate(TagBase):
-    pass
-
-
-class TagInDB(TagBase):
+class TagResponce(BaseModel):
     id: int
-
-
-class TagInResponse(TagInDB):
-    pass
+    share_id: int
