@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from typing import Type
 
 from src.database.models import User, Share
-from schemas import ShareRequest, TagCreate
+from schemas import ShareRequest, TagRequest
 import qrcode as qr
 import cloudinary.uploader
 from src.repository.tags import extract_tags, create_tag, get_tag_by_name
@@ -15,7 +15,7 @@ from src.repository.tags import extract_tags, create_tag, get_tag_by_name
 
 # create
 async def create_share(share: ShareRequest, src_url: str, db: Session, current_user: User) -> Share:
-    if db.query(Share).filter(Share.url == share.url).first():
+    if db.query(Share).filter(Share.url == src_url).first():
         raise HTTPException(status_code=400, detail='This share is already exists.')
 
     # Отримайте список тегів з тексту
@@ -29,7 +29,7 @@ async def create_share(share: ShareRequest, src_url: str, db: Session, current_u
             db_share.tags.append(db_tag)
         else:
             # Створіть новий тег, якщо він не існує
-            db_tag = create_tag(db, TagCreate(name=tag_name))
+            db_tag = create_tag(db, TagRequest(name=tag_name))
             db_share.tags.append(db_tag)
     
     db_share = Share(**share.model_dump(), user=current_user)
@@ -109,4 +109,10 @@ async def generate_qr_code(url: str, name: str, db: Session, current_user: User)
     db.refresh(share)
 
     return qr_code_data# qr_code_data.print_ascii(tty=True, invert=True)
+
+
+async def get_share_by_id(share_id: int, db: Session) -> Share:
+    share = db.query(Share).filter(Share.id == share_id)
+    return share
+
 
