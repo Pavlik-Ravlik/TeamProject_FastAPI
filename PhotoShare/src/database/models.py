@@ -35,6 +35,7 @@ class Share(Base):
     url = Column(String, index=True, nullable=False)
     image_qr = Column(String, index=True, nullable=True)
     description = Column(String, index=True, nullable=False)
+    tags = Column(String, index=True, nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now())
     user_id = Column('users_id', ForeignKey('users.id', ondelete='CASCADE'))
