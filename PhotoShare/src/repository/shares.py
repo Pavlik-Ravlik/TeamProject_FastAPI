@@ -1,37 +1,37 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import text, and_
+from sqlalchemy import and_
 
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing import Type
 
 from src.database.models import User, Share
-from schemas import ShareRequest, TagRequest
+from schemas import ShareRequest
 import qrcode as qr
 import cloudinary.uploader
 from src.repository.tags import extract_tags, create_tag, get_tag_by_name
 
 
-
-# create
-async def create_share(description: str, db: Session, current_user: User) -> Share:
+async def create_share(description: str, url: str,  db: Session, current_user: User) -> Share:
     db_share = Share()
     db_share.description = description
     tags = extract_tags(description)
     db_share.tags = tags
+    db_share.url = url
+    db_share.user = current_user.id
     
     db.add(db_share)
     db.commit()
     db.refresh(db_share)
     return db_share
 
-# read shares
+
 async def get_list_shares(db: Session, current_user: User) -> list[Type[Share]]:
     shares = db.query(Share).filter(Share.user_id == current_user.id).all()
     return shares
 
 
-#read share
+
 async def get_share(share_id: int, db: Session, current_user: User) -> Type[Share]:
     share = db.query(Share).filter(and_(Share.id == share_id, Share.user_id == current_user.id)).first()
 
@@ -40,7 +40,7 @@ async def get_share(share_id: int, db: Session, current_user: User) -> Type[Shar
     return share
 
 
-# update
+
 async def update_share(share_id: int, updated_share: ShareRequest, db: Session, current_user: User) -> Type[Share]:
     share = db.query(Share).filter(and_(Share.id == share_id, Share.user_id == current_user.id)).first()
 
@@ -55,7 +55,7 @@ async def update_share(share_id: int, updated_share: ShareRequest, db: Session, 
     return share
 
 
-# delete
+
 async def delete_share(share_id: int, db: Session, current_user: User) -> Type[Share]:
     share = db.query(Share).filter(and_(Share.id == share_id, Share.user_id == current_user.id)).first()
 
@@ -66,7 +66,7 @@ async def delete_share(share_id: int, db: Session, current_user: User) -> Type[S
     db.commit()
     return share 
 
-# qrcode
+
 async def generate_qr_code(url: str, name: str, db: Session, current_user: User) -> Share:
     share = db.query(Share).filter(and_(Share.url == url, Share.user_id == current_user.id)).first()
 
@@ -95,7 +95,7 @@ async def generate_qr_code(url: str, name: str, db: Session, current_user: User)
     db.commit()
     db.refresh(share)
 
-    return qr_code_data# qr_code_data.print_ascii(tty=True, invert=True)
+    return qr_code_data
 
 
 async def get_share_by_id(share_id: int, db: Session) -> Share:

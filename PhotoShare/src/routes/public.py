@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
 from typing import List
-#from fastapi_limiter.depends import RateLimiter
 
 from src.database.db import get_db
 from src.database.models import User
@@ -16,7 +15,7 @@ from schemas import  ShareResponce
 router = APIRouter(prefix="/public-shares", tags=['recomendations'])
 
 
-@router.get('/public-shares', response_model=List[ShareResponce]) #  , dependencies=[Depends(RateLimiter(times=10, seconds=60)
+@router.get('/public-shares', response_model=List[ShareResponce])
 async def read_shares(db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
     shares = repository_public.get_list_users_shares(db, current_user)
     return shares

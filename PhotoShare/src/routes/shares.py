@@ -5,7 +5,6 @@ import cloudinary
 from cloudinary.uploader import upload, upload_image
 from cloudinary.utils import cloudinary_url
 from typing import List
-#from fastapi_limiter.depends import RateLimiter
 
 from src.database.db import get_db
 from src.database.models import Share, User
@@ -21,10 +20,12 @@ router = APIRouter(prefix="/shares", tags=['my-shares'])
 
 @router.post('/create', response_model=ShareResponce, status_code=status.HTTP_201_CREATED)
 async def upload_share(description: str, file: UploadFile = File(), db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    
     cloudinary.config(
-        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-        api_key=os.getenv("CLOUDINARY_API_KEY"),
-        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        cloud_name=settings.cloudinary_name,
+        api_key=settings.cloudinary_api_key,
+        api_secret=settings.cloudinary_api_secret,
+        secure=True,
     )
     
     try:
@@ -37,11 +38,8 @@ async def upload_share(description: str, file: UploadFile = File(), db: Session 
         url, _ = cloudinary_url(
             result["public_id"], format=result["format"])
         
-        db_share = await repository_shares.create_share(description=description, db=db, current_user=current_user)
-        db_share.url = url     
-        db.commit()
-
-        return url
+        db_share = await repository_shares.create_share(description, url, db, current_user)
+        return db_share
     
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error uploading photo")

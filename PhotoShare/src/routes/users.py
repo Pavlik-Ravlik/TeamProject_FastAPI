@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
@@ -15,31 +15,11 @@ router = APIRouter(prefix="/profile", tags=["profile"])
 
 @router.get("/me/", response_model=UserDb)
 async def read_users_me(current_user: User = Depends(auth_service.get_current_user)):
-    """
-    This function will be activated when the client sends a GET request to this route.
-
-    :param current_user: A contacts for the user.
-    :type current_user: User
-    :return: Current user.
-    :rtype: User
-    """
     return current_user
 
 
 @router.patch("/avatar", response_model=UserDb)
 async def update_avatar_user(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
-    """
-    Triggered when a client sends a PATCH request to this route.
-
-    :param file: Upload file for a user.
-    :type file: UploadFile
-    :param current_user: Update avatar user for the user.
-    :type current_user: User
-    :param db: The database session
-    :type db: Session
-    :return: User.
-    :rtype: User
-    """
     cloudinary.config(
         cloud_name=settings.cloudinary_name,
         api_key=settings.cloudinary_api_key,
@@ -49,7 +29,7 @@ async def update_avatar_user(file: UploadFile = File(), current_user: User = Dep
 
     r = cloudinary.uploader.upload(
         file.file,
-        public_id=f"NotesApp/{current_user.username}", # NotesApp/{current_user.username}_jpg
+        public_id=f"NotesApp/{current_user.username}",
         width=500,
         height=500,
         crop="limit",

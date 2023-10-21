@@ -1,8 +1,5 @@
 from sqlalchemy.orm import Session
-#from sqlalchemy import and_
 from sqlalchemy.orm import Session
-
-#from typing import Type
 
 from fastapi import HTTPException
 
