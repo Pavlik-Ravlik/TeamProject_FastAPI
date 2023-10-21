@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, status, UploadFile, File
+import os
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 import cloudinary
-import cloudinary.uploader
+from cloudinary.uploader import upload, upload_image
+from cloudinary.utils import cloudinary_url
 from typing import List
 #from fastapi_limiter.depends import RateLimiter
 
@@ -12,41 +14,37 @@ from src.repository import shares as repository_shares
 from src.services.auth import auth_service
 from src.conf.config import settings
 from schemas import ShareRequest, ShareResponce
-
+from sqlalchemy import and_
 
 router = APIRouter(prefix="/shares", tags=['my-shares'])
 
 
 @router.post('/create', response_model=ShareResponce, status_code=status.HTTP_201_CREATED)
-async def create_share(share: ShareRequest, file: UploadFile = File(),  db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    
+async def upload_share(description: str, file: UploadFile = File(), db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
     cloudinary.config(
-        cloud_name=settings.cloudinary_name,
-        api_key=settings.cloudinary_api_key,
-        api_secret=settings.cloudinary_api_secret,
-        secure=True,
-    )
-
-    # uploaded_file_jpg
-    r = cloudinary.uploader.upload(
-        file.file,
-        public_id=f"NotesApp/{current_user.username}", # NotesApp/{current_user.username}_jpg
-        width=500,
-        height=500,
-        crop="limit",
-        format="jpg",
-    )
-
-    src_url = cloudinary.CloudinaryImage(f"NotesApp/{current_user.username}").build_url( # (f"NotesApp/{current_user.username}_jpg") or (uploaded_file_jpg['public_id']) / (r['public_id'])
-        width=500, height=500, crop="limit", format="jpg"
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
     )
     
-    # Додайте відповідний код для виділення тегів з опису share.description
-    tags = repository_shares.extract_tags(share.description)
+    try:
+        if not file.content_type.startswith("image"):
+            raise HTTPException(status_code=400, detail="Invalid image format")
+        
+        result = upload_image(file.file, folder="photo_base",
+                              width=360, height=480, crop="fill")
+        
+        url, _ = cloudinary_url(
+            result["public_id"], format=result["format"])
+        
+        db_share = await repository_shares.create_share(description=description, db=db, current_user=current_user)
+        db_share.url = url     
+        db.commit()
 
-    # Передайте теги у функцію create_share
-    share = await repository_shares.create_share(share, src_url, db, current_user, tags)
-    return share
+        return url
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error uploading photo")
 
 
 @router.post('/qr', response_model=List[ShareResponce]) 
