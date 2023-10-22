@@ -1,25 +1,20 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import text, and_
+from sqlalchemy import and_
 
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
+
 from sqlalchemy.orm import Session
 from typing import Type
 
 from src.database.models import User, Share
-from schemas import ShareRequest, TagRequest
+from schemas import ShareRequest
 import qrcode as qr
 import cloudinary.uploader
-from src.repository.tags import extract_tags, create_tag, get_tag_by_name
+from src.repository.tags import create_tag
 
-
-
-# create
-async def create_share(description: str, db: Session, current_user: User) -> Share:
-    db_share = Share()
-    db_share.description = description
-    tags = extract_tags(description)
-    db_share.tags = tags
-    
+async def create_share(description: str, url: str,  db: Session, current_user: User) -> Share:
+    tags = create_tag(db, description)    
+    db_share = Share(url=url, description=description, tag=tags, user=current_user.id)
     db.add(db_share)
     db.commit()
     db.refresh(db_share)
@@ -38,7 +33,6 @@ async def get_share(share_id: int, db: Session, current_user: User) -> Type[Shar
     if share is None:
         raise HTTPException(status_code=404, detail='Share not found')
     return share
-
 
 # update
 async def update_share(share_id: int, updated_share: ShareRequest, db: Session, current_user: User) -> Type[Share]:
