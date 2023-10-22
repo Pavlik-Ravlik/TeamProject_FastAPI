@@ -5,7 +5,6 @@ from typing import List
 from src.database.db import get_db
 from src.database.models import User
 
-from src.repository import public as repository_public
 from src.repository import admin as repository_admin
 from src.services.auth import auth_service
 from schemas import  ShareResponce, ShareRequest, Admin, CommentResponce
@@ -77,7 +76,3 @@ async def admin_delete_comment(comment_id: int, db: Session = Depends(get_db), c
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
     return comment
-
-
-#@router.get('/tags', response_model=)
-    
