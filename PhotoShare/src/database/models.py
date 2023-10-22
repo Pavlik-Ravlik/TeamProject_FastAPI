@@ -24,8 +24,10 @@ class Comment(Base):
     created_at = Column('crated_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now())
     share_id = Column('shares_id', ForeignKey('shares.id', ondelete='CASCADE'), default=None)
-    user_id = Column('users_id', ForeignKey('users.id', ondelete='CASCADE'))
     share = relationship('Share', backref='comments')
+    user_id = Column('users_id', ForeignKey('users.id', ondelete='CASCADE'))
+    user = relationship('User', backref='users')
+
 
 
 class Share(Base):
@@ -35,11 +37,14 @@ class Share(Base):
     url = Column(String, index=True, nullable=False)
     image_qr = Column(String, index=True, nullable=True)
     description = Column(String, index=True, nullable=False)
-    tags = Column(String, index=True, nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now())
+    comment_id = Column('comments_id', ForeignKey('comments.id', ondelete='CASCADE'))
+    comment = relationship('Comment', backref='comments')
     user_id = Column('users_id', ForeignKey('users.id', ondelete='CASCADE'))
     user = relationship('User', backref='shares')
+    tags_id = Column('tags_id', ForeignKey('tags.id', ondelete='CASCADE'))
+    tag = relationship('Tag', backref='tags')
 
 
 class User(Base):
