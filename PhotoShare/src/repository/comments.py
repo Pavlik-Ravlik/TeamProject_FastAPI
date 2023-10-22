@@ -13,7 +13,7 @@ async def create_comment(share_id: int, comment: CommentRequest, db: Session, cu
         raise HTTPException(status_code=400, detail='You comment is already exist.')
     
     
-    comment = Comment(share_id=share_id, description=comment.description, user_id=current_user.id)
+    comment = Comment(share=share_id, description=comment.description, user=current_user.id)
     db.add(comment)
     db.commit()
     db.refresh(comment)

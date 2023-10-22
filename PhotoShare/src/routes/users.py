@@ -35,6 +35,7 @@ async def update_avatar_user(file: UploadFile = File(), current_user: User = Dep
         crop="limit",
         format="jpg",
     )
+
     
     src_url = cloudinary.CloudinaryImage(f"NotesApp/{current_user.username}").build_url(width=500, height=500, crop="limit", format="jpg")
 

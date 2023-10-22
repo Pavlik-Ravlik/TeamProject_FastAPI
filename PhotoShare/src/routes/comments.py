@@ -1,27 +1,23 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-import cloudinary
-import cloudinary.uploader
-
 
 from src.database.db import get_db
-from src.database.models import User, Share
+from src.database.models import User
 
 from src.repository import comments as repository_comment
 from src.repository import shares as repository_share
 from src.services.auth import auth_service
-from src.conf.config import settings
 from schemas import CommentRequest, CommentResponce
 
 
 router = APIRouter(prefix="/comments", tags=['comment'])
 
 
-@router.post("/create", response_model=CommentResponce)
+@router.post("/create", response_model=CommentResponce, status_code=status.HTTP_201_CREATED)
 async def create_comment(share_id: int, comment: CommentRequest, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
     share = repository_share.get_share_by_id(share_id, db)
     
-    if not share:
+    if share is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Share not found.')
     
     if share.user_id == current_user.id:
