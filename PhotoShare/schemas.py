@@ -1,35 +1,72 @@
 from pydantic import BaseModel
 from pydantic import BaseModel, EmailStr, Field
-from datetime import date, datetime
+from datetime import datetime
+from typing import Optional
+from typing import List
 
 
 class CommentRequest(BaseModel):
-    description: str
+    comment: str
 
 
 class CommentResponce(BaseModel):
+    comment: str
+
+
+
+class AdminComment(CommentResponce):
     id: int
-    user_id: int
-    description: str
+
+
+class TagRequest(BaseModel):
+    name: str
+
+
+class TagResponce(BaseModel):
+    id: int
+    tags: str
+
 
 class Admin(BaseModel):
     id: int
     role: str
 
 
-class ShareRequest(BaseModel):
-    description: str = Field(min_length=2, max_length=50)
+class GetRole(BaseModel):
+    role: str
 
+
+class PhotoRequest(BaseModel):
+    description: str
+    
+
+class PhotoModel(BaseModel):
+    id: int
+    url: str
+    image_qr: Optional[str] = None
+    description: Optional[str] = None
+    comments: List[CommentResponce] = []
+    tags: List[TagRequest] = []
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class AdminPhotosModel(BaseModel):
+    id: int
+    url: str
+    image_qr: Optional[str] = None
+    description: Optional[str] = None
+    comments: List[AdminComment] = []
+    tags: List[TagRequest] = []
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
 class ShareResponce(BaseModel):
     id: int
-    image: str
-    qrcode: str
-    description: str = Field(min_length=2, max_length=50)
-    comment: str
-    tags: list
+    url: str
+    description: Optional[str] = None
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None 
 
 
 class UserModel(BaseModel):
@@ -63,12 +100,3 @@ class TokenModel(BaseModel):
 
 class RequestEmail(BaseModel):
     email: EmailStr
-    
-
-class TagRequest(BaseModel):
-    name: str
-
-
-class TagResponce(BaseModel):
-    id: int
-    share_id: int

@@ -23,6 +23,7 @@ pydantic-settings = "^2.0.3"
 fastapi-mail = "^1.4.1"
 qrcode = "^7.4.2"
 fastapi-limiter = "^0.1.5"
+bytesbufio = "^1.0.3"
 
 
 [build-system]

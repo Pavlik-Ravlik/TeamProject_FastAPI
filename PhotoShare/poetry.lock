@@ -123,6 +123,17 @@ files = [
 ]
 
 [[package]]
+name = "bytesbufio"
+version = "1.0.3"
+description = "io.BytesIO that preserves bytes after close"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "bytesbufio-1.0.3-py3-none-any.whl", hash = "sha256:e4063ff349b28bdc1458f425cf47597de06d01dbbbc6a3687271b4b7b1fe38eb"},
+    {file = "bytesbufio-1.0.3.tar.gz", hash = "sha256:a2cb1986e7c7a57cb7c204196a20178f381676503cd984786789a77e351bd62d"},
+]
+
+[[package]]
 name = "certifi"
 version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1116,4 +1127,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e24688b491b4a1e144827291858441390e403557622f4680fb98ceb50babfb44"
+content-hash = "50eacc9d88374f33698ed9d7881fd2181d932d16660306b608538773920b53ba"

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship
@@ -6,14 +6,25 @@ from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
+comments_shares = Table('comments_shares', Base.metadata,
+    Column('comment_id', Integer, ForeignKey('comments.id')),
+    Column('share_id', Integer, ForeignKey('shares.id'))
+)
+
+
+shares_tags = Table(
+    'shares_tags',
+    Base.metadata,
+    Column('share_id', Integer, ForeignKey('shares.id')),
+    Column('tag_id', Integer, ForeignKey('tags.id'))
+)
 
 class Tag(Base):
     __tablename__ = 'tags'
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(15), unique=True)
-    share_id = Column('shares_id', ForeignKey('shares.id', ondelete='CASCADE'), default=None)
-    share = relationship('Share', backref='tags')
+    shares = relationship('Share', secondary=shares_tags, back_populates='tags')
 
 
 class Comment(Base):
@@ -23,12 +34,9 @@ class Comment(Base):
     description = Column(String, nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now())
-    share_id = Column('shares_id', ForeignKey('shares.id', ondelete='CASCADE'), default=None)
-    share = relationship('Share', backref='comments')
     user_id = Column('users_id', ForeignKey('users.id', ondelete='CASCADE'))
-    user = relationship('User', backref='users')
-
-
+    user = relationship('User', backref='comments')
+    shares = relationship('Share', secondary=comments_shares, back_populates='comments')
 
 class Share(Base):
     __tablename__ = 'shares'
@@ -38,13 +46,11 @@ class Share(Base):
     image_qr = Column(String, index=True, nullable=True)
     description = Column(String, index=True, nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
-    updated_at = Column('updated_at', DateTime, default=func.now())
-    comment_id = Column('comments_id', ForeignKey('comments.id', ondelete='CASCADE'))
-    comment = relationship('Comment', backref='comments')
+    updated_at = Column('updated_at', DateTime, default=func.now(), server_default=None)
     user_id = Column('users_id', ForeignKey('users.id', ondelete='CASCADE'))
     user = relationship('User', backref='shares')
-    tags_id = Column('tags_id', ForeignKey('tags.id', ondelete='CASCADE'))
-    tag = relationship('Tag', backref='tags')
+    comments = relationship('Comment', secondary=comments_shares, back_populates='shares')
+    tags = relationship('Tag', secondary=shares_tags, back_populates='shares')
 
 
 class User(Base):
