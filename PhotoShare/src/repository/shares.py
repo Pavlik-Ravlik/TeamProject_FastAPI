@@ -6,17 +6,31 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing import Type
 
-from src.database.models import User, Share
-from schemas import ShareRequest
+from src.database.models import User, Share, Tag, Comment
+from schemas import PhotoRequest, PhotoModel, CommentResponce, TagRequest
 import qrcode as qr
 import cloudinary.uploader
-from src.repository.tags import create_tag
+from src.repository.tags import extract_tags
+from src.conf.config import settings
+from io import BytesIO
 
 
-async def create_share(description: str, url: str,  db: Session, current_user: User) -> Share:
-    tags = create_tag(db, description)    
-    db_share = Share(url=url, description=description, tag=tags, user=current_user.id)
+async def create_share(description: str, url: str, db: Session, current_user: User) -> Share:
+    tags = extract_tags(description)  # список тегів
+    created_tags = []
+
+    if tags:
+        for tag_name in tags:
+            tag = db.query(Tag).filter(Tag.name == tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.add(tag)
+            created_tags.append(tag)
+
+    db_share = Share(url=url, description=description, user=current_user) #, tags=created_tags
     db.add(db_share)
+    for tag in created_tags:
+        db_share.tags.append(tag)
     db.commit()
     db.refresh(db_share)
     return db_share
@@ -24,21 +38,58 @@ async def create_share(description: str, url: str,  db: Session, current_user: U
 
 async def get_list_shares(db: Session, current_user: User) -> list[Type[Share]]:
     shares = db.query(Share).filter(Share.user_id == current_user.id).all()
-    return shares
+
+    share_models = []
+    for share in shares:
+        comments = db.query(Comment).filter(Comment.shares.contains(share)).all()
+        comment_responses = [CommentResponce(comment=comment.description) for comment in comments]
+        tags = db.query(Tag).filter(Tag.shares.contains(share)).all()
+        tags_responce = [TagRequest(name=tag.name) for tag in tags]
+
+        share_model = PhotoModel(
+            id=share.id,
+            url=share.url,
+            image_qr=share.image_qr,
+            description=share.description,
+            comments=comment_responses,
+            tags=tags_responce,
+            created_at=share.created_at,
+            updated_at=share.updated_at
+        )
+        
+        share_models.append(share_model)
+    return share_models
 
 
 
-async def get_share(share_id: int, db: Session, current_user: User) -> Type[Share]:
-    share = db.query(Share).filter(and_(Share.id == share_id, Share.user_id == current_user.id)).first()
+async def get_share(photo_id: int, db: Session, current_user: User) -> Type[Share]:
+    share = db.query(Share).filter(and_(Share.id == photo_id, Share.user_id == current_user.id)).first()
 
     if share is None:
         raise HTTPException(status_code=404, detail='Share not found')
-    return share
+    
+    comments = db.query(Comment).filter(Comment.shares.contains(share)).all()
+    comment_responses = [CommentResponce(comment=comment.description) for comment in comments]
+    tags = db.query(Tag).filter(Tag.shares.contains(share)).all()
+    tags_responce = [TagRequest(name=tag.name) for tag in tags]
+
+    share_model = PhotoModel(
+        id=share.id,
+        url=share.url,
+        image_qr=share.image_qr,
+        description=share.description,
+        comments=comment_responses,
+        tags=tags_responce,
+        created_at=share.created_at,
+        updated_at=share.updated_at
+    )
+    
+    return share_model
+    
 
 
-# update
-async def update_share(share_id: int, updated_share: ShareRequest, db: Session, current_user: User) -> Type[Share]:
-    share = db.query(Share).filter(and_(Share.id == share_id, Share.user_id == current_user.id)).first()
+async def update_share(photo_id: int, updated_share: PhotoRequest, db: Session, current_user: User) -> Type[Share]:
+    share = db.query(Share).filter(and_(Share.id == photo_id, Share.user_id == current_user.id)).first()
 
     if share is None:
         raise HTTPException(status_code=404, detail='Share not found')
@@ -51,9 +102,8 @@ async def update_share(share_id: int, updated_share: ShareRequest, db: Session, 
     return share
 
 
-
-async def delete_share(share_id: int, db: Session, current_user: User) -> Type[Share]:
-    share = db.query(Share).filter(and_(Share.id == share_id, Share.user_id == current_user.id)).first()
+async def delete_share(photo_id: int, db: Session, current_user: User) -> Type[Share]:
+    share = db.query(Share).filter(and_(Share.id == photo_id, Share.user_id == current_user.id)).first()
 
     if share is None:
         raise HTTPException(status_code=404, detail='Share not found') 
@@ -63,8 +113,18 @@ async def delete_share(share_id: int, db: Session, current_user: User) -> Type[S
     return share 
 
 
-async def generate_qr_code(url: str, name: str, db: Session, current_user: User) -> Share:
+async def generate_qr_code(url: str, name: str, db: Session, current_user: User):
     share = db.query(Share).filter(and_(Share.url == url, Share.user_id == current_user.id)).first()
+    if share.image_qr:
+        return share.image_qr
+
+    
+    cloudinary.config(
+        cloud_name=settings.cloudinary_name,
+        api_key=settings.cloudinary_api_key,
+        api_secret=settings.cloudinary_api_secret,
+        secure=True
+    )
 
     if share is None:
         raise HTTPException(status_code=404, detail='Share not found')
@@ -80,22 +140,17 @@ async def generate_qr_code(url: str, name: str, db: Session, current_user: User)
     image_qr.add_data(combined_data)
     image_qr.make(fit=True)
 
-    qr_code_data = image_qr.make_image(fill_color="black", back_color="white")
-    qr_code_data = qr_code_data.get_image()  # 
+    img = image_qr.make_image(fill_color="black", back_color="white")
+    img_byte_io = BytesIO()
+    img.save(img_byte_io)
+    img_bytes = img_byte_io.getvalue()
 
-    cloudinary_response = cloudinary.uploader.upload(qr_code_data.to_file(), folder="qr_codes")
-    image_url = cloudinary_response["secure_url"]
+    cloudinary_response = cloudinary.uploader.upload(img_bytes, folder="qr_codes")
+    image_url = cloudinary_response.get("secure_url")
 
     share.image_qr = image_url
 
     db.commit()
     db.refresh(share)
 
-    return qr_code_data
-
-
-async def get_share_by_id(share_id: int, db: Session) -> Share:
-    share = db.query(Share).filter(Share.id == share_id)
-    return share
-
-
+    return image_url

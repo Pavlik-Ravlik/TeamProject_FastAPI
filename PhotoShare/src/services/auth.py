@@ -20,7 +20,7 @@ class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
     def verify_password(self, plain_password, hashed_password):
@@ -37,7 +37,7 @@ class Auth:
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
-            expire = datetime.utcnow() + timedelta(minutes=15)
+            expire = datetime.utcnow() + timedelta(minutes=100) #запамятати
         to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"})
         encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_access_token
@@ -74,7 +74,8 @@ class Auth:
         )
 
         try:
-            # Decode JWT
+            token = token.removeprefix("Bearer ")
+            
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload['scope'] == 'access_token':
                 email = payload["sub"]

@@ -7,71 +7,54 @@ from src.database.models import User
 
 from src.repository import admin as repository_admin
 from src.services.auth import auth_service
-from schemas import  ShareResponce, ShareRequest, Admin, CommentResponce
+from schemas import  ShareResponce, PhotoRequest, CommentResponce, PhotoModel, GetRole, AdminPhotosModel
 
 
-router = APIRouter(prefix="/all-shares", tags=['admin-moder'])
+router = APIRouter(prefix="/photos", tags=['admin-moder'])
 
 
-@router.get('/all-shares', response_model=List[ShareResponce])
-async def admin_read_shares(db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    shares = repository_admin.admin_get_list_users_shares(db, current_user)
+@router.get('/', response_model=List[AdminPhotosModel])
+async def read_photos(db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    shares = await repository_admin.get_list_users_photos(db, current_user)
     return shares
 
 
-@router.get("/{share_id}", response_model=ShareResponce)
-async def admin_read_share(share_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    share = await repository_admin.admin_get_user_share(share_id, db, current_user)
+@router.get("/{photo_id}", response_model=PhotoModel)
+async def read_photo(photo_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    share = await repository_admin.get_user_photo(photo_id, db, current_user)
     return share
 
 
-@router.put("/{share_id}", response_model=ShareResponce)
-async def admin_update_share(share_id: int, update_share: ShareRequest, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    share = await repository_admin.admin_update_share(share_id, update_share, db, current_user)
+@router.put("/{photo_id}", response_model=ShareResponce)
+async def update_photo(photo_id: int, updated_photo: PhotoRequest, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    share = await repository_admin.update_photo(photo_id, updated_photo, db, current_user)
     return share
 
 
-@router.delete("/{share_id}", response_model=ShareResponce)
-async def admin_delete_share(share_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    share = await repository_admin.admin_delete_share(share_id, db, current_user)
+@router.delete("/{photo_id}", response_model=ShareResponce)
+async def delete_photo(photo_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    share = await repository_admin.delete_photo(photo_id, db, current_user)
     return share
 
 
-@router.put("/{user_id}", response_model=Admin)
-async def admin_transfer_role(user_id: int, role: str, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    share = await repository_admin.admin_get_role(user_id, role, db, current_user)
+@router.put("/user/{user_id}", response_model=GetRole)
+async def transfer_role(user_id: int, role: GetRole, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    share = await repository_admin.get_role(user_id, role, db, current_user)
     return share 
 
 
-@router.get('/all-comments', response_model=CommentResponce)
-async def admin_read_comments(db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    comments = await repository_admin.admin_read_comments(db, current_user)
-
-    if comments is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comments not found.")
-    return comments
-
-
-@router.get('/{comment_id}', response_model=CommentResponce)
-async def admin_read_comment(comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    comment = await repository_admin.admin_get_comment(comment_id, db, current_user)
-
-    if comment is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
-    return comment
-
-
 @router.put('/{comment_id}', response_model=CommentResponce)
-async def admin_update_comment(comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    comment = await repository_admin.admin_update_comment(comment_id, db, current_user)
+async def update_comment(comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    comment = await repository_admin.update_comment(comment_id, db, current_user)
 
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Comment not found')
     return comment
 
+
 @router.delete('/{comment_id}', response_model=CommentResponce)
-async def admin_delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
-    comment = await repository_admin.admin_delete_comment(comment_id, db, current_user)
+async def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+    comment = await repository_admin.delete_comment(comment_id, db, current_user)
 
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")

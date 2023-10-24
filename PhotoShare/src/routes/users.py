@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
@@ -19,7 +19,7 @@ async def read_users_me(current_user: User = Depends(auth_service.get_current_us
 
 
 @router.patch("/avatar", response_model=UserDb)
-async def update_avatar_user(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
+async def update_avatar_user(file: UploadFile, current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
     cloudinary.config(
         cloud_name=settings.cloudinary_name,
         api_key=settings.cloudinary_api_key,

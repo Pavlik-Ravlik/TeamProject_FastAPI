@@ -3,21 +3,28 @@ from sqlalchemy.orm import Session
 
 from fastapi import HTTPException
 
-from src.database.models import User, Comment
-from schemas import CommentRequest
+from src.database.models import User, Comment, Share
+from schemas import CommentRequest, CommentResponce
 
 
-async def create_comment(share_id: int, comment: CommentRequest, db: Session, current_user: User) -> Comment:
-    comment = db.query(Comment).filter(Comment.description == comment.description).first()
-    if comment is None:
-        raise HTTPException(status_code=400, detail='You comment is already exist.')
+async def create_comment(photo_id: int, comment: CommentRequest, db: Session, current_user: User) -> Comment:
+    if comment == '':
+        raise HTTPException(status_code=204, detail='You comment is empty.')
     
     
-    comment = Comment(share=share_id, description=comment.description, user=current_user.id)
-    db.add(comment)
+    new_comment = Comment(description=comment.comment, user=current_user)
+    db.add(new_comment)
     db.commit()
-    db.refresh(comment)
-    return comment
+    db.refresh(new_comment)
+    db_share = db.query(Share).filter(Share.id == photo_id).first()
+    
+    if db_share is None:
+        raise HTTPException(status_code=404, detail='Share not found')
+    
+    db_share.comments.append(new_comment)
+    
+    db.commit()
+    return CommentResponce(comment=new_comment.description, share_id=photo_id)
 
 
 async def update_comment(comment_id: int, new_text: str ,db: Session, current_user: User) -> Comment:
@@ -32,4 +39,4 @@ async def update_comment(comment_id: int, new_text: str ,db: Session, current_us
     comment.description = new_text
     db.commit()
     db.refresh(comment)
-    return comment
+    return comment.description
